@@ -1,0 +1,66 @@
+# Makefile created by Rhyscitlema
+# Explanation of file structure available at:
+# http://rhyscitlema.com/applications/makefile.html
+
+UNZIP = unzip
+MOVE = mv
+COPY = cp
+DIR = ./libpng
+
+OUTPUT_FILE = $(DIR)/libpng.a
+
+OBJECT_FILES = $(DIR)/png.o \
+               $(DIR)/pngerror.o \
+               $(DIR)/pngget.o \
+               $(DIR)/pngmem.o \
+               $(DIR)/pngpread.o \
+               $(DIR)/pngread.o \
+               $(DIR)/pngrio.o \
+               $(DIR)/pngrtran.o \
+               $(DIR)/pngrutil.o \
+               $(DIR)/pngset.o \
+               $(DIR)/pngtrans.o \
+               $(DIR)/pngwio.o \
+               $(DIR)/pngwrite.o \
+               $(DIR)/pngwtran.o \
+               $(DIR)/pngwutil.o
+
+#-------------------------------------------------
+
+# C compiler
+CC = gcc
+
+# archiver
+AR = ar
+
+# compiler flags
+CC_FLAGS = -Wall -ansi -pedantic $(CFLAGS)
+
+# archiver flags
+AR_FLAGS = -crs #$(ARFLAGS)
+
+#-------------------------------------------------
+
+make: $(DIR) $(OUTPUT_FILE)
+
+$(DIR):
+	$(UNZIP) lpng1628.zip
+	$(MOVE) lpng1628 $(DIR)
+	$(MAKE) -f make_libpng
+
+$(OUTPUT_FILE): $(DIR)/pnglibconf.h $(OBJECT_FILES)
+	$(AR) $(AR_FLAGS) $(OUTPUT_FILE) $(OBJECT_FILES)
+
+$(DIR)/pnglibconf.h:
+	$(COPY) $(DIR)/scripts/pnglibconf.h.prebuilt $(DIR)/pnglibconf.h
+
+# remove all created files
+clean:
+	$(RM) $(DIR)/*.o $(DIR)/*.a
+
+#-------------------------------------------------
+
+# compile .c files to .o files
+%.o: %.c $(DIR)/*.h
+	$(CC) $(CC_FLAGS) -c -o $@ $<
+

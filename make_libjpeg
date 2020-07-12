@@ -1,0 +1,111 @@
+# Makefile created by Rhyscitlema
+# Explanation of file structure available at:
+# http://rhyscitlema.com/applications/makefile.html
+
+UNZIP = unzip
+MOVE = mv
+COPY = cp
+DIR = ./libjpeg
+
+OUTPUT_FILE = $(DIR)/libjpeg.a
+
+OBJECT_FILES = $(DIR)/cdjpeg.o \
+               $(DIR)/jcapimin.o \
+               $(DIR)/jcapistd.o \
+               $(DIR)/jccoefct.o \
+               $(DIR)/jccolor.o \
+               $(DIR)/jcdctmgr.o \
+               $(DIR)/jchuff.o \
+               $(DIR)/jcinit.o \
+               $(DIR)/jcmainct.o \
+               $(DIR)/jcmarker.o \
+               $(DIR)/jcmaster.o \
+               $(DIR)/jcomapi.o \
+               $(DIR)/jcparam.o \
+               $(DIR)/jcphuff.o \
+               $(DIR)/jcprepct.o \
+               $(DIR)/jcsample.o \
+               $(DIR)/jctrans.o \
+               $(DIR)/jdapimin.o \
+               $(DIR)/jdapistd.o \
+               $(DIR)/jdatadst.o \
+               $(DIR)/jdatasrc.o \
+               $(DIR)/jdcoefct.o \
+               $(DIR)/jdcolor.o \
+               $(DIR)/jddctmgr.o \
+               $(DIR)/jdhuff.o \
+               $(DIR)/jdinput.o \
+               $(DIR)/jdmainct.o \
+               $(DIR)/jdmarker.o \
+               $(DIR)/jdmaster.o \
+               $(DIR)/jdmerge.o \
+               $(DIR)/jdphuff.o \
+               $(DIR)/jdpostct.o \
+               $(DIR)/jdsample.o \
+               $(DIR)/jdtrans.o \
+               $(DIR)/jerror.o \
+               $(DIR)/jfdctflt.o \
+               $(DIR)/jfdctfst.o \
+               $(DIR)/jfdctint.o \
+               $(DIR)/jidctflt.o \
+               $(DIR)/jidctfst.o \
+               $(DIR)/jidctint.o \
+               $(DIR)/jidctred.o \
+               $(DIR)/jmemansi.o \
+               $(DIR)/jmemmgr.o \
+               $(DIR)/jquant1.o \
+               $(DIR)/jquant2.o \
+               $(DIR)/jutils.o \
+               $(DIR)/rdbmp.o \
+               $(DIR)/rdcolmap.o \
+               $(DIR)/rdgif.o \
+               $(DIR)/rdppm.o \
+               $(DIR)/rdrle.o \
+               $(DIR)/rdswitch.o \
+               $(DIR)/rdtarga.o \
+               $(DIR)/transupp.o \
+               $(DIR)/wrbmp.o \
+               $(DIR)/wrgif.o \
+               $(DIR)/wrppm.o \
+               $(DIR)/wrrle.o \
+               $(DIR)/wrtarga.o
+
+#-------------------------------------------------
+
+# C compiler
+CC = gcc
+
+# archiver
+AR = ar
+
+# compiler flags
+CC_FLAGS = -Wall -ansi -pedantic $(CFLAGS)
+
+# archiver flags
+AR_FLAGS = -crs #$(ARFLAGS)
+
+#-------------------------------------------------
+
+make: $(DIR) $(OUTPUT_FILE)
+
+$(DIR):
+	$(UNZIP) jpegsr6.zip
+	$(MOVE) jpeg-6b $(DIR)
+	$(MAKE) -f make_libjpeg
+
+$(OUTPUT_FILE): $(DIR)/jconfig.h $(OBJECT_FILES)
+	$(AR) $(AR_FLAGS) $(OUTPUT_FILE) $(OBJECT_FILES)
+
+$(DIR)/jconfig.h:
+	$(COPY) $(DIR)/jconfig.cfg $(DIR)/jconfig.h
+
+# remove all created files
+clean:
+	$(RM) $(DIR)/*.o $(DIR)/*.a
+
+#-------------------------------------------------
+
+# compile .c files to .o files
+%.o: %.c $(DIR)/*.h
+	$(CC) $(CC_FLAGS) -c -o $@ $<
+

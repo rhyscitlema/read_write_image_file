@@ -1,0 +1,62 @@
+# Makefile created by Rhyscitlema
+# Explanation of file structure available at:
+# http://rhyscitlema.com/applications/makefile.html
+
+UNZIP = unzip
+MOVE = mv
+DIR = ./zlib
+
+OUTPUT_FILE = $(DIR)/libz.a
+
+OBJECT_FILES = $(DIR)/adler32.o \
+               $(DIR)/compress.o \
+               $(DIR)/crc32.o \
+               $(DIR)/deflate.o \
+               $(DIR)/gzclose.o \
+               $(DIR)/gzlib.o \
+               $(DIR)/gzread.o \
+               $(DIR)/gzwrite.o \
+               $(DIR)/infback.o \
+               $(DIR)/inffast.o \
+               $(DIR)/inflate.o \
+               $(DIR)/inftrees.o \
+               $(DIR)/trees.o \
+               $(DIR)/uncompr.o \
+               $(DIR)/zutil.o
+
+#-------------------------------------------------
+
+# C compiler
+CC = gcc
+
+# archiver
+AR = ar
+
+# compiler flags
+CC_FLAGS = -Wall -ansi -pedantic $(CFLAGS)
+
+# archiver flags
+AR_FLAGS = -crs #$(ARFLAGS)
+
+#-------------------------------------------------
+
+make: $(DIR) $(OUTPUT_FILE)
+
+$(DIR):
+	$(UNZIP) zlib1211.zip
+	$(MOVE) zlib-1.2.11 $(DIR)
+	$(MAKE) -f make_zlib
+
+$(OUTPUT_FILE): $(OBJECT_FILES)
+	$(AR) $(AR_FLAGS) $(OUTPUT_FILE) $(OBJECT_FILES)
+
+# remove all created files
+clean:
+	$(RM) $(DIR)/*.o $(DIR)/*.a
+
+#-------------------------------------------------
+
+# compile .c files to .o files
+%.o: %.c $(DIR)/*.h
+	$(CC) $(CC_FLAGS) -c -o $@ $<
+
