@@ -1,7 +1,7 @@
 /*
     rwif_bmp.c
 
-    Issue: a bug related to offsetToStartOfImageData with BI_BITFIELDS
+    See: https://en.wikipedia.org/wiki/BMP_file_format
 */
 
 #include <stdio.h>
@@ -11,7 +11,7 @@
 
 #define BI_RGB 0
 #define BI_BITFIELDS 3
-#define CT(bpp) (bpp==24 ? BI_RGB : BI_BITFIELDS)
+#define CT(bpp) (bpp==24 ? BI_RGB : BI_BITFIELDS) /* Compression Type */
 
 
 
@@ -26,7 +26,7 @@ typedef struct _Windows_BMP_Header
     unsigned int height;
     unsigned short numberOfPlanes;          /* must be 1 */
     unsigned short bitsPerPixel;
-    unsigned int compressionType;           /* must be 0 */
+    unsigned int compressionType;           /* must be CT(bpp) */
     unsigned int sizeOfImageData;           /* includes padding */
     unsigned int horizontalResolutionPPM;
     unsigned int verticalResolutionPPM;
@@ -38,7 +38,7 @@ typedef struct _Windows_BMP_Header
 
 static void print_bmp_header (BMP_Header* bmp)
 {
-    /*--- uncomment for debugging ---
+    #ifdef DEBUG
     printf(".signature = %x\n", bmp->signature);
     printf(".filesize = %u\n", bmp->filesize);
     printf(".reserved = %u\n", bmp->reserved);
@@ -53,7 +53,8 @@ static void print_bmp_header (BMP_Header* bmp)
     printf(".horizontalResolutionPPM = %u\n", bmp->horizontalResolutionPPM);
     printf(".verticalResolutionPPM = %u\n", bmp->verticalResolutionPPM);
     printf(".numberOfImageColours = %u\n", bmp->numberOfImageColours);
-    printf(".numberOfImportantColours = %u\n", bmp->numberOfImportantColours);*/
+    printf(".numberOfImportantColours = %u\n", bmp->numberOfImportantColours);
+    #endif
 }
 
 
@@ -72,10 +73,9 @@ int read_image_file_bmp (const char* filename, ImageData *imagedata)
 
     FILE *file = fopen (filename, "rb");
     int ret; /* return value */
-    while(1) /* not a loop */
-    {
-        if(!file)
-        {   sprintf (rwif_errormessage, "Read Error: file '%s' could not be opened for reading.", filename);
+    do{
+        if(!file) {
+            sprintf (rwif_errormessage, "Read Error: file '%s' could not be opened for reading.", filename);
             ret = -2; break;
         }
 
@@ -90,6 +90,7 @@ int read_image_file_bmp (const char* filename, ImageData *imagedata)
         i = sizeof(bmpHeader.signature) + sizeof(bmpHeader.filesize);
         i = bmpHeader.filesize-i;
         filecontent = (unsigned char*) malloc (i);
+
         if(fread(filecontent, 1, i, file) != i)
         {
             sprintf (rwif_errormessage, "Read Error: file '%s' expected size != actual size.", filename);
@@ -128,7 +129,7 @@ int read_image_file_bmp (const char* filename, ImageData *imagedata)
             ret = -1; break;
         }
 
-        content = filecontent-2-4 + bmpHeader.offsetToStartOfImageData;
+        content = filecontent-2-4 + bmpHeader.offsetToStartOfImageData; /* filecontent starts after signature and filesize were read */
 
         i = bmpHeader.height * bmpHeader.width * (bmpHeader.bitsPerPixel/8);
         pixelArray = (unsigned char*)malloc(i);
@@ -170,8 +171,7 @@ int read_image_file_bmp (const char* filename, ImageData *imagedata)
         imagedata->width = bmpHeader.width;
         imagedata->bpp = bmpHeader.bitsPerPixel;
         ret = 1;
-        break;
-    }
+    }while(0);
 
     /* free resources */
     free(filecontent);
@@ -191,6 +191,7 @@ int write_image_file_bmp (const char* filename, const ImageData *imagedata)
     height = imagedata->height;
     width = imagedata->width;
     bpp = imagedata->bpp;
+
     if(bpp!=24 && bpp!=32)
     { sprintf(rwif_errormessage, "Write Error on '%s': bits-per-pixel must be 24 or 32 not %d.", filename, bpp); return 0; }
 
@@ -198,15 +199,16 @@ int write_image_file_bmp (const char* filename, const ImageData *imagedata)
     file = fopen(filename, "wb");
     if(!file) { sprintf(rwif_errormessage, "Write Error: file '%s' could not be opened for writing.", filename); return 0; }
 
-    size = 54 + height*((width*bpp+31)/32)*4;
+    i = CT(bpp) == BI_BITFIELDS ? 4*4 : 0;
+    size = 54+i + height*((width*bpp+31)/32)*4;
     filecontent = (unsigned char*)malloc(size);
-
     content = filecontent;
+
     *((unsigned short*)content) = 0x4D42 ; content += sizeof(unsigned short); /* signature */
     *((unsigned int  *)content) = size   ; content += sizeof(unsigned int  ); /* filesize */
     *((unsigned int  *)content) = 0      ; content += sizeof(unsigned int  ); /* reserved */
-    *((unsigned int  *)content) = 54     ; content += sizeof(unsigned int  ); /* offsetToStartOfImageData */
-    *((unsigned int  *)content) = 40     ; content += sizeof(unsigned int  ); /* sizeOfBitmapInfoHeader */
+    *((unsigned int  *)content) = 54+i   ; content += sizeof(unsigned int  ); /* offsetToStartOfImageData */
+    *((unsigned int  *)content) = 40+i   ; content += sizeof(unsigned int  ); /* sizeOfBitmapInfoHeader */
     *((unsigned int  *)content) = width  ; content += sizeof(unsigned int  ); /* width */
     *((unsigned int  *)content) = height ; content += sizeof(unsigned int  ); /* height */
     *((unsigned short*)content) = 1      ; content += sizeof(unsigned short); /* numberOfPlanes */
@@ -217,6 +219,14 @@ int write_image_file_bmp (const char* filename, const ImageData *imagedata)
     *((unsigned int  *)content) = 3780   ; content += sizeof(unsigned int  ); /* verticalResolutionPPM */
     *((unsigned int  *)content) = 0      ; content += sizeof(unsigned int  ); /* numberOfImageColours */
     *((unsigned int  *)content) = 0      ; content += sizeof(unsigned int  ); /* numberOfImportantColours */
+
+    if(i>0) /* if BI_BITFIELDS is specified */
+    {
+        *((unsigned int*)content) = 0x00FF0000; content += sizeof(unsigned int); /* Red channel bit mask */
+        *((unsigned int*)content) = 0x0000FF00; content += sizeof(unsigned int); /* Green channel bit mask */
+        *((unsigned int*)content) = 0x000000FF; content += sizeof(unsigned int); /* Blue channel bit mask */
+        *((unsigned int*)content) = 0xFF000000; content += sizeof(unsigned int); /* Alpha channel bit mask */
+    }
 
     colour = imagedata->pixelArray + height*width*bpp/8;
 

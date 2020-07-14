@@ -8,11 +8,6 @@ EXE_OUT_FILE = rwif
 # library output file
 LIB_OUT_FILE = librwif.a
 
-OBJECT_FILES = rwif_any.o \
-               rwif_bmp.o \
-               rwif_png.o \
-               rwif_jpeg.o
-
 LIBJPEG = ./libjpeg
 LIBPNG  = ./libpng
 ZLIB    = ./zlib
@@ -54,7 +49,7 @@ lib:
 	$(MAKE) -f make_libpng CFLAGS+="-I$(ZLIB)"
 	$(MAKE) -f make_libjpeg
 	$(MAKE) objects CFLAGS+="-I$(LIBJPEG) -I$(LIBPNG)"
-	$(AR) $(AR_FLAGS) $(LIB_OUT_FILE) *.o $(LIBJPEG)/*.o $(LIBPNG)/*.o $(ZLIB)/*.o
+	$(AR) $(AR_FLAGS) $(LIB_OUT_FILE) rwif_*.o $(LIBJPEG)/*.o $(LIBPNG)/*.o $(ZLIB)/*.o
 # TODO: instead merge *.o $(LIBJPEG)/libjpeg.a $(LIBPNG)/libpng.a $(ZLIB)libzlib.a
 
 # use libpng of operating system
@@ -78,7 +73,7 @@ clean:
 
 #-------------------------------------------------
 
-objects: $(OBJECT_FILES)
+objects: rwif_*.o
 
 # compile .c files to .o files
 %.o: %.c *.h
