@@ -11,7 +11,7 @@ typedef struct _ImageData
     unsigned char* pixelArray;
     unsigned int height;
     unsigned int width;
-    unsigned int bpp; /* Bits Per Pixel */
+    unsigned short bpp; /* Bits Per Pixel */
     /* Colour format for bpp=3*8 is {Blue, Green, Red} */
     /* Colour format for bpp=4*8 is {Blue, Green, Red, Alpha} */
 } ImageData;

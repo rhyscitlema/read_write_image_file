@@ -10,6 +10,11 @@
 #include <malloc.h>
 #include "rwif.h"
 
+#ifdef NO_PNG
+int read_image_file_png(const char* filename, ImageData *imagedata) { return 0; }
+int write_image_file_png(const char* filename, const ImageData *imagedata) { return 0; }
+#else
+
 #include <png.h>
 
 #define ABORT(string, argument, rt) \
@@ -206,3 +211,5 @@ int write_image_file_png (const char* filename, const ImageData *imagedata)
     /* return success */
     return 1;
 }
+
+#endif

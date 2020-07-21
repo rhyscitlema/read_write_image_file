@@ -184,7 +184,8 @@ int read_image_file_bmp (const char* filename, ImageData *imagedata)
 /* return success 1 or failure 0 */
 int write_image_file_bmp (const char* filename, const ImageData *imagedata)
 {
-    int i, j, size, width, height, bpp;
+	unsigned int i, j, size, width, height;
+	unsigned short bpp;
     unsigned char *filecontent, *content, *colour;
     FILE* file;
 

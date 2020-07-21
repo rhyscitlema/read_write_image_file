@@ -10,6 +10,11 @@
 #include <malloc.h>
 #include "rwif.h"
 
+#ifdef NO_JPEG
+int read_image_file_jpg(const char* filename, ImageData *imagedata) { return 0; }
+int write_image_file_jpg(const char* filename, const ImageData *imagedata, int quality) { return 0; }
+#else
+
 #include <setjmp.h>
 #include <jpeglib.h>
 
@@ -336,3 +341,5 @@ int write_image_file_jpg (const char* filename, const ImageData *imagedata, int 
     /* return success */
     return 1;
 }
+
+#endif
