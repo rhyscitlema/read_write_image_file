@@ -71,10 +71,10 @@ lib_use_os_png_jpeg:
 
 # remove all created files
 clean:
+	$(RM) *.o $(EXE_OUT_FILE) $(LIB_OUT_FILE)
 	$(MAKE) clean -f make_libjpeg
 	$(MAKE) clean -f make_libpng
 	$(MAKE) clean -f make_zlib
-	$(RM) *.o $(EXE_OUT_FILE) $(LIB_OUT_FILE)
 
 #-------------------------------------------------
 

@@ -1,7 +1,7 @@
 *.o
 *.a
-visualstudio/x64/
-visualstudio/*.user
-libjpeg
-libpng
-zlib
+*.user
+x64/
+libjpeg/
+libpng/
+zlib/

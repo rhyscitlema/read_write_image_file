@@ -127,13 +127,13 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="..\rwif_any.c" />
-    <ClCompile Include="..\rwif_bmp.c" />
-    <ClCompile Include="..\rwif_jpeg.c" />
-    <ClCompile Include="..\rwif_png.c" />
+    <ClCompile Include="rwif_any.c" />
+    <ClCompile Include="rwif_bmp.c" />
+    <ClCompile Include="rwif_jpeg.c" />
+    <ClCompile Include="rwif_png.c" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\rwif.h" />
+    <ClInclude Include="rwif.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
